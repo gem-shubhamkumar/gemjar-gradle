@@ -1,13 +1,34 @@
-plugins {
-    id 'java'
-}
+defaultTasks 'clean', 'test', 'aggregate'
+
+apply plugin: 'java'
+apply plugin: 'net.serenity-bdd.aggregator'
+//apply plugin: 'com.github.johnrengelman.shadow'
+
+//plugins {
+//    id 'java'
+//    id "com.github.johnrengelman.shadow" version "5.0.0"
+//    id "net.serenity-bdd.aggregator"
+//}
 
 group 'com.gemini.generic'
 version '1.0-SNAPSHOT'
 
 repositories {
     mavenCentral()
+}
 
+buildscript {
+    project.ext {
+        serenityVersion = '2.3.12'
+    }
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath('net.serenity-bdd:serenity-gradle-plugin:' + serenityVersion)
+        classpath('net.serenity-bdd:serenity-single-page-report:' + serenityVersion)
+//        classpath('gradle.plugin.com.github.johnrengelman:shadow:5.0.0')
+    }
 }
 
 dependencies {
@@ -23,8 +44,21 @@ dependencies {
     implementation 'io.cucumber:cucumber-testng:7.3.4'
     implementation 'io.github.bonigarcia:webdrivermanager:5.2.3'
     implementation 'io.cucumber:cucumber-junit:7.0.0'
+    implementation 'net.serenity-bdd:serenity-core:3.3.7'
+    implementation 'net.serenity-bdd:serenity-junit:3.3.7'
+    implementation 'net.serenity-bdd:serenity-cucumber:3.3.7'
+}
+
+serenity {
+    reports = ["single-page-html"]
 }
 
 test {
-    useJUnit()
+    ignoreFailures = true
+    testLogging.showStandardStreams = true
+    systemProperties System.getProperties()
+
 }
+gradle.startParameter.continueOnFailure = true
+
+test.finalizedBy(aggregate)
